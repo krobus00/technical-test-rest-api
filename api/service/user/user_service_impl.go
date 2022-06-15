@@ -3,7 +3,7 @@ package user
 import (
 	"context"
 	"errors"
-	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/krobus00/technical-test-rest-api/constant"
@@ -13,7 +13,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func (svc *service) RegisterUser(ctx context.Context, payload *model.RegisterUserRequest) (*model.RegisterUserResponse, error) {
+func (svc *service) RegisterUser(ctx context.Context, payload *model.RegisterUserRequest) (*model.TokenResponse, error) {
 
 	password, err := util.HashPassword(payload.Password)
 	if err != nil {
@@ -53,7 +53,7 @@ func (svc *service) RegisterUser(ctx context.Context, payload *model.RegisterUse
 		return nil, err
 	}
 
-	return &model.RegisterUserResponse{
+	return &model.TokenResponse{
 		AccessToken:           accessToken.Token,
 		AccessTokenExpiredAt:  accessToken.Exp,
 		RefreshToken:          refreshToken.Token,
@@ -61,7 +61,7 @@ func (svc *service) RegisterUser(ctx context.Context, payload *model.RegisterUse
 	}, nil
 }
 
-func (svc *service) LoginUser(ctx context.Context, payload *model.LoginUserRequest) (*model.LoginUserResponse, error) {
+func (svc *service) LoginUser(ctx context.Context, payload *model.LoginUserRequest) (*model.TokenResponse, error) {
 
 	checkUser := &database.User{
 		Username: payload.Username,
@@ -71,10 +71,10 @@ func (svc *service) LoginUser(ctx context.Context, payload *model.LoginUserReque
 		return nil, err
 	}
 	if user == nil {
-		return nil, errors.New("username not found")
+		return nil, model.NewHttpCustomError(http.StatusBadRequest, errors.New("Username not found"))
 	}
 	if !util.CheckPasswordHash(payload.Password, user.Password) {
-		return nil, errors.New("Wrong password")
+		return nil, model.NewHttpCustomError(http.StatusBadRequest, errors.New("Wrong password"))
 	}
 
 	accessToken, err := util.CreateToken(user.ID.Hex(), svc.config.AccessTokenDuration, svc.config.AccessTokenSecret)
@@ -95,7 +95,7 @@ func (svc *service) LoginUser(ctx context.Context, payload *model.LoginUserReque
 		return nil, err
 	}
 
-	return &model.LoginUserResponse{
+	return &model.TokenResponse{
 		AccessToken:           accessToken.Token,
 		AccessTokenExpiredAt:  accessToken.Exp,
 		RefreshToken:          refreshToken.Token,
@@ -115,9 +115,6 @@ func (svc *service) GetUserInfo(ctx context.Context) (*model.UserResponse, error
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println()
-	fmt.Println(user.DateColumn)
-	fmt.Println()
 
 	return &model.UserResponse{
 		ID:       user.ID.Hex(),
@@ -127,5 +124,55 @@ func (svc *service) GetUserInfo(ctx context.Context) (*model.UserResponse, error
 			CreatedAt: user.DateColumn.CreatedAt,
 			UpdatedAt: user.DateColumn.UpdatedAt,
 		},
+	}, nil
+}
+
+func (svc *service) RefreshToken(ctx context.Context) (*model.TokenResponse, error) {
+	userID, err := primitive.ObjectIDFromHex(ctx.Value("userID").(string))
+	if err != nil {
+		return nil, err
+	}
+	checkUser := &database.User{
+		ID: userID,
+	}
+	user, err := svc.repository.UserRepository.FindUserByID(ctx, svc.db, checkUser)
+	if err != nil {
+		return nil, err
+	}
+
+	session := &database.Session{
+		RefreshToken: ctx.Value("token").(string),
+	}
+
+	removed, err := svc.repository.SessionRepository.DeleteSessionByRefreshToken(ctx, svc.db, session)
+	if err != nil {
+		return nil, err
+	}
+	if removed != 1 {
+		return nil, model.NewHttpCustomError(http.StatusUnprocessableEntity, errors.New("Invalid refresh token"))
+	}
+
+	accessToken, err := util.CreateToken(user.ID.Hex(), svc.config.AccessTokenDuration, svc.config.AccessTokenSecret)
+	refreshToken, err := util.CreateToken(user.ID.Hex(), svc.config.RefreshTokenDuration, svc.config.RefreshTokenSecret)
+
+	newSession := &database.Session{
+		Username:     user.Username,
+		RefreshToken: refreshToken.Token,
+		IsBlocked:    false,
+		DateColumn: database.DateColumn{
+			CreatedAt: time.Now().Unix(),
+			UpdatedAt: time.Now().Unix(),
+			DeletedAt: nil,
+		},
+	}
+	_, err = svc.repository.SessionRepository.Store(ctx, svc.db, newSession)
+	if err != nil {
+		return nil, err
+	}
+	return &model.TokenResponse{
+		AccessToken:           accessToken.Token,
+		AccessTokenExpiredAt:  accessToken.Exp,
+		RefreshToken:          refreshToken.Token,
+		RefreshTokenExpiredAt: refreshToken.Exp,
 	}, nil
 }

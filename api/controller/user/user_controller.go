@@ -76,3 +76,16 @@ func (c *Controller) HandleGetUserInfo(eCtx echo.Context) error {
 
 	return eCtx.JSON(http.StatusOK, resp)
 }
+
+func (c *Controller) HandleRefreshToken(eCtx echo.Context) error {
+	ctx := eCtx.Request().Context()
+
+	ctx = context.WithValue(ctx, "userID", eCtx.Get("userID").(string))
+	ctx = context.WithValue(ctx, "token", eCtx.Get("token").(string))
+	resp, err := c.UserService.RefreshToken(ctx)
+	if err != nil {
+		return err
+	}
+
+	return eCtx.JSON(http.StatusOK, resp)
+}

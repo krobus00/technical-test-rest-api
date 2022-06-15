@@ -33,6 +33,8 @@ func DecodeJWTTokenMiddleware(tokenSecret string) echo.MiddlewareFunc {
 				return model.NewHttpCustomError(http.StatusUnauthorized, errors.New("Invalid Token"))
 			}
 
+			eCtx.Set("token", tokenHeader)
+
 			token, err := VerifyToken(tokenSecret, tokenHeader)
 			if err != nil {
 				return model.NewHttpCustomError(http.StatusUnauthorized, errors.New("Invalid Token"))

@@ -18,6 +18,7 @@ type (
 	SessionRepository interface {
 		GetCollectionName() string
 		Store(ctx context.Context, db *mongo.Database, input *database.Session) (*database.Session, error)
+		DeleteSessionByRefreshToken(ctx context.Context, db *mongo.Database, input *database.Session) (int64, error)
 	}
 	repository struct {
 		logger infrastructure.Logger

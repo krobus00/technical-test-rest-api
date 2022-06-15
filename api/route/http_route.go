@@ -16,11 +16,13 @@ func NewRoutes(
 	e := router
 
 	service := e.Group("/service")
-	decodeJWTMiddleware := local_middleware.DecodeJWTTokenMiddleware(config.AccessTokenSecret)
+	decodeAccessTokenJWTMiddleware := local_middleware.DecodeJWTTokenMiddleware(config.AccessTokenSecret)
+	decodeRefreshTokenMiddleware := local_middleware.DecodeJWTTokenMiddleware(config.RefreshTokenSecret)
 
 	service.POST("/user/register", handler.UserController.HandleUserRegister)
 	service.POST("/user/login", handler.UserController.HandleUserLogin)
-	service.GET("/user/me", handler.UserController.HandleGetUserInfo, decodeJWTMiddleware)
+	service.GET("/user/me", handler.UserController.HandleGetUserInfo, decodeAccessTokenJWTMiddleware)
+	service.GET("/user/refresh-token", handler.UserController.HandleRefreshToken, decodeRefreshTokenMiddleware)
 }
 
 var Module = fx.Options(

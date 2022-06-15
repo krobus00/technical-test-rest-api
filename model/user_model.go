@@ -5,19 +5,12 @@ type RegisterUserRequest struct {
 	Password string `json:"password"`
 }
 
-type RegisterUserResponse struct {
-	AccessToken           string `json:"accessToken"`
-	AccessTokenExpiredAt  int64  `json:"AccessTokenExpiredAt"`
-	RefreshToken          string `json:"refreshToken"`
-	RefreshTokenExpiredAt int64  `json:"RefreshTokenExpiredAt"`
-}
-
 type LoginUserRequest struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
 
-type LoginUserResponse struct {
+type TokenResponse struct {
 	AccessToken           string `json:"accessToken"`
 	AccessTokenExpiredAt  int64  `json:"AccessTokenExpiredAt"`
 	RefreshToken          string `json:"refreshToken"`

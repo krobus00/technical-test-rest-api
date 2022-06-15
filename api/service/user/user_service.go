@@ -17,9 +17,10 @@ const (
 
 type (
 	UserService interface {
-		RegisterUser(ctx context.Context, payload *model.RegisterUserRequest) (*model.RegisterUserResponse, error)
-		LoginUser(ctx context.Context, payload *model.LoginUserRequest) (*model.LoginUserResponse, error)
+		RegisterUser(ctx context.Context, payload *model.RegisterUserRequest) (*model.TokenResponse, error)
+		LoginUser(ctx context.Context, payload *model.LoginUserRequest) (*model.TokenResponse, error)
 		GetUserInfo(ctx context.Context) (*model.UserResponse, error)
+		RefreshToken(ctx context.Context) (*model.TokenResponse, error)
 	}
 	service struct {
 		logger     infrastructure.Logger

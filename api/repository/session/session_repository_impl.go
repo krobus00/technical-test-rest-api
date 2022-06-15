@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/krobus00/technical-test-rest-api/model/database"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -26,4 +27,14 @@ func (r *repository) Store(ctx context.Context, db *mongo.Database, input *datab
 		RefreshToken: input.RefreshToken,
 		IsBlocked:    input.IsBlocked,
 	}, nil
+}
+
+func (r *repository) DeleteSessionByRefreshToken(ctx context.Context, db *mongo.Database, input *database.Session) (int64, error) {
+	filter := bson.M{"refresh_token": input.RefreshToken}
+
+	result, err := db.Collection(r.GetCollectionName()).DeleteOne(ctx, filter)
+	if err != nil {
+		return 0, err
+	}
+	return result.DeletedCount, nil
 }
