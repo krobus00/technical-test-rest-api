@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -18,6 +19,7 @@ func (svc *service) RegisterUser(ctx context.Context, payload *model.RegisterUse
 
 	password, err := util.HashPassword(payload.Password)
 	if err != nil {
+		svc.logger.Zap.Error(fmt.Sprintf("%s %s with error: %v", tag, tracingRegisterUser, err))
 		return nil, err
 	}
 	newUser := &database.User{
@@ -33,6 +35,7 @@ func (svc *service) RegisterUser(ctx context.Context, payload *model.RegisterUse
 
 	user, err := svc.repository.UserRepository.FindUserByUsername(ctx, svc.db, newUser)
 	if err != nil {
+		svc.logger.Zap.Error(fmt.Sprintf("%s %s with error: %v", tag, tracingRegisterUser, err))
 		return nil, err
 	}
 	if user != nil {
@@ -41,11 +44,20 @@ func (svc *service) RegisterUser(ctx context.Context, payload *model.RegisterUse
 
 	user, err = svc.repository.UserRepository.Store(ctx, svc.db, newUser)
 	if err != nil {
+		svc.logger.Zap.Error(fmt.Sprintf("%s %s with error: %v", tag, tracingRegisterUser, err))
 		return nil, err
 	}
 
 	accessToken, err := util.CreateToken(user.ID.Hex(), newUser.Role, svc.config.AccessTokenDuration, svc.config.AccessTokenSecret)
+	if err != nil {
+		svc.logger.Zap.Error(fmt.Sprintf("%s %s with error: %v", tag, tracingRegisterUser, err))
+		return nil, err
+	}
 	refreshToken, err := util.CreateToken(user.ID.Hex(), newUser.Role, svc.config.RefreshTokenDuration, svc.config.RefreshTokenSecret)
+	if err != nil {
+		svc.logger.Zap.Error(fmt.Sprintf("%s %s with error: %v", tag, tracingRegisterUser, err))
+		return nil, err
+	}
 
 	newSession := &database.Session{
 		Username:     user.Username,
@@ -59,6 +71,7 @@ func (svc *service) RegisterUser(ctx context.Context, payload *model.RegisterUse
 	}
 	_, err = svc.repository.SessionRepository.Store(ctx, svc.db, newSession)
 	if err != nil {
+		svc.logger.Zap.Error(fmt.Sprintf("%s %s with error: %v", tag, tracingRegisterUser, err))
 		return nil, err
 	}
 
@@ -77,6 +90,7 @@ func (svc *service) LoginUser(ctx context.Context, payload *model.LoginUserReque
 	}
 	user, err := svc.repository.UserRepository.FindUserByUsername(ctx, svc.db, checkUser)
 	if err != nil {
+		svc.logger.Zap.Error(fmt.Sprintf("%s %s with error: %v", tag, tracingLoginUser, err))
 		return nil, err
 	}
 	if user == nil {
@@ -87,7 +101,15 @@ func (svc *service) LoginUser(ctx context.Context, payload *model.LoginUserReque
 	}
 
 	accessToken, err := util.CreateToken(user.ID.Hex(), user.Role, svc.config.AccessTokenDuration, svc.config.AccessTokenSecret)
+	if err != nil {
+		svc.logger.Zap.Error(fmt.Sprintf("%s %s with error: %v", tag, tracingLoginUser, err))
+		return nil, err
+	}
 	refreshToken, err := util.CreateToken(user.ID.Hex(), user.Role, svc.config.RefreshTokenDuration, svc.config.RefreshTokenSecret)
+	if err != nil {
+		svc.logger.Zap.Error(fmt.Sprintf("%s %s with error: %v", tag, tracingLoginUser, err))
+		return nil, err
+	}
 
 	newSession := &database.Session{
 		Username:     user.Username,
@@ -101,6 +123,7 @@ func (svc *service) LoginUser(ctx context.Context, payload *model.LoginUserReque
 	}
 	_, err = svc.repository.SessionRepository.Store(ctx, svc.db, newSession)
 	if err != nil {
+		svc.logger.Zap.Error(fmt.Sprintf("%s %s with error: %v", tag, tracingLoginUser, err))
 		return nil, err
 	}
 
@@ -116,6 +139,7 @@ func (svc *service) GetUserInfo(ctx context.Context) (*model.UserResponse, error
 	p := bluemonday.StrictPolicy()
 	userID, err := primitive.ObjectIDFromHex(ctx.Value("userID").(string))
 	if err != nil {
+		svc.logger.Zap.Error(fmt.Sprintf("%s %s with error: %v", tag, tracingGetUserInfo, err))
 		return nil, err
 	}
 	checkUser := &database.User{
@@ -123,6 +147,7 @@ func (svc *service) GetUserInfo(ctx context.Context) (*model.UserResponse, error
 	}
 	user, err := svc.repository.UserRepository.FindUserByID(ctx, svc.db, checkUser)
 	if err != nil {
+		svc.logger.Zap.Error(fmt.Sprintf("%s %s with error: %v", tag, tracingGetUserInfo, err))
 		return nil, err
 	}
 
@@ -140,6 +165,7 @@ func (svc *service) GetUserInfo(ctx context.Context) (*model.UserResponse, error
 func (svc *service) RefreshToken(ctx context.Context) (*model.TokenResponse, error) {
 	userID, err := primitive.ObjectIDFromHex(ctx.Value("userID").(string))
 	if err != nil {
+		svc.logger.Zap.Error(fmt.Sprintf("%s %s with error: %v", tag, tracingRefreshToken, err))
 		return nil, err
 	}
 	checkUser := &database.User{
@@ -147,6 +173,7 @@ func (svc *service) RefreshToken(ctx context.Context) (*model.TokenResponse, err
 	}
 	user, err := svc.repository.UserRepository.FindUserByID(ctx, svc.db, checkUser)
 	if err != nil {
+		svc.logger.Zap.Error(fmt.Sprintf("%s %s with error: %v", tag, tracingRefreshToken, err))
 		return nil, err
 	}
 
@@ -156,6 +183,7 @@ func (svc *service) RefreshToken(ctx context.Context) (*model.TokenResponse, err
 
 	removed, err := svc.repository.SessionRepository.DeleteSessionByRefreshToken(ctx, svc.db, session)
 	if err != nil {
+		svc.logger.Zap.Error(fmt.Sprintf("%s %s with error: %v", tag, tracingRefreshToken, err))
 		return nil, err
 	}
 	if removed != 1 {
@@ -163,7 +191,15 @@ func (svc *service) RefreshToken(ctx context.Context) (*model.TokenResponse, err
 	}
 
 	accessToken, err := util.CreateToken(user.ID.Hex(), user.Role, svc.config.AccessTokenDuration, svc.config.AccessTokenSecret)
+	if err != nil {
+		svc.logger.Zap.Error(fmt.Sprintf("%s %s with error: %v", tag, tracingRefreshToken, err))
+		return nil, err
+	}
 	refreshToken, err := util.CreateToken(user.ID.Hex(), user.Role, svc.config.RefreshTokenDuration, svc.config.RefreshTokenSecret)
+	if err != nil {
+		svc.logger.Zap.Error(fmt.Sprintf("%s %s with error: %v", tag, tracingRefreshToken, err))
+		return nil, err
+	}
 
 	newSession := &database.Session{
 		Username:     user.Username,
@@ -177,6 +213,7 @@ func (svc *service) RefreshToken(ctx context.Context) (*model.TokenResponse, err
 	}
 	_, err = svc.repository.SessionRepository.Store(ctx, svc.db, newSession)
 	if err != nil {
+		svc.logger.Zap.Error(fmt.Sprintf("%s %s with error: %v", tag, tracingRefreshToken, err))
 		return nil, err
 	}
 	return &model.TokenResponse{

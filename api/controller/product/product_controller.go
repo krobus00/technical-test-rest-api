@@ -2,6 +2,7 @@ package product
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	ut "github.com/go-playground/universal-translator"
@@ -15,6 +16,12 @@ import (
 
 const (
 	tag = "[ProductController]"
+
+	tracingHandleCreateProduct    = "HandleCreateProduct"
+	tracingHandleGetProductDetail = "HandleGetProductDetail"
+	tracingHandleGetAllProduct    = "HandleGetAllProduct"
+	tracingHandleUpdateProduct    = "HandleUpdateProduct"
+	tracingHandleDeleteProduct    = "HandleDeleteProduct"
 )
 
 type Controller struct {
@@ -30,6 +37,7 @@ func (c *Controller) HandleCreateProduct(eCtx echo.Context) error {
 
 	payload := new(model.CreateProductRequest)
 	if err := eCtx.Bind(payload); err != nil {
+		c.Logger.Zap.Error(fmt.Sprintf("%s %s with error: %v", tag, tracingHandleCreateProduct, err))
 		return err
 	}
 
@@ -41,6 +49,7 @@ func (c *Controller) HandleCreateProduct(eCtx echo.Context) error {
 	ctx = context.WithValue(ctx, "userID", eCtx.Get("userID").(string))
 	resp, err := c.ProductService.Store(ctx, payload)
 	if err != nil {
+		c.Logger.Zap.Error(fmt.Sprintf("%s %s with error: %v", tag, tracingHandleCreateProduct, err))
 		return err
 	}
 
@@ -56,6 +65,7 @@ func (c *Controller) HandleGetProductDetail(eCtx echo.Context) error {
 
 	payload := new(model.GetProductDetailRequest)
 	if err := eCtx.Bind(payload); err != nil {
+		c.Logger.Zap.Error(fmt.Sprintf("%s %s with error: %v", tag, tracingHandleGetProductDetail, err))
 		return err
 	}
 
@@ -68,6 +78,7 @@ func (c *Controller) HandleGetProductDetail(eCtx echo.Context) error {
 	ctx = context.WithValue(ctx, "role", eCtx.Get("role").(string))
 	resp, err := c.ProductService.FindProductByID(ctx, payload)
 	if err != nil {
+		c.Logger.Zap.Error(fmt.Sprintf("%s %s with error: %v", tag, tracingHandleGetProductDetail, err))
 		return err
 	}
 	dataResp := model.DataResponse{
@@ -82,6 +93,7 @@ func (c *Controller) HandleGetAllProduct(eCtx echo.Context) error {
 
 	payload := new(model.PaginationRequest)
 	if err := eCtx.Bind(payload); err != nil {
+		c.Logger.Zap.Error(fmt.Sprintf("%s %s with error: %v", tag, tracingHandleGetAllProduct, err))
 		return err
 	}
 
@@ -94,6 +106,7 @@ func (c *Controller) HandleGetAllProduct(eCtx echo.Context) error {
 	ctx = context.WithValue(ctx, "role", eCtx.Get("role").(string))
 	resp, err := c.ProductService.FindAll(ctx, payload)
 	if err != nil {
+		c.Logger.Zap.Error(fmt.Sprintf("%s %s with error: %v", tag, tracingHandleGetAllProduct, err))
 		return err
 	}
 
@@ -109,6 +122,7 @@ func (c *Controller) HandleUpdateProduct(eCtx echo.Context) error {
 
 	payload := new(model.UpdateProductRequest)
 	if err := eCtx.Bind(payload); err != nil {
+		c.Logger.Zap.Error(fmt.Sprintf("%s %s with error: %v", tag, tracingHandleUpdateProduct, err))
 		return err
 	}
 
@@ -121,6 +135,7 @@ func (c *Controller) HandleUpdateProduct(eCtx echo.Context) error {
 	ctx = context.WithValue(ctx, "role", eCtx.Get("role").(string))
 	resp, err := c.ProductService.Update(ctx, payload)
 	if err != nil {
+		c.Logger.Zap.Error(fmt.Sprintf("%s %s with error: %v", tag, tracingHandleUpdateProduct, err))
 		return err
 	}
 
@@ -136,6 +151,7 @@ func (c *Controller) HandleDeleteProduct(eCtx echo.Context) error {
 
 	payload := new(model.DeleteProductRequest)
 	if err := eCtx.Bind(payload); err != nil {
+		c.Logger.Zap.Error(fmt.Sprintf("%s %s with error: %v", tag, tracingHandleDeleteProduct, err))
 		return err
 	}
 
@@ -148,6 +164,7 @@ func (c *Controller) HandleDeleteProduct(eCtx echo.Context) error {
 	ctx = context.WithValue(ctx, "role", eCtx.Get("role").(string))
 	err := c.ProductService.Delete(ctx, payload)
 	if err != nil {
+		c.Logger.Zap.Error(fmt.Sprintf("%s %s with error: %v", tag, tracingHandleDeleteProduct, err))
 		return err
 	}
 	resp := &model.BasicResponse{

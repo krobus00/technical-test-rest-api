@@ -2,6 +2,7 @@ package session
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/krobus00/technical-test-rest-api/model/database"
 	"go.mongodb.org/mongo-driver/bson"
@@ -14,7 +15,7 @@ func (r *repository) Store(ctx context.Context, db *mongo.Database, input *datab
 
 	result, err := db.Collection(r.GetCollectionName()).InsertOne(ctx, input)
 	if err != nil {
-		r.logger.Zap.Error(err.Error())
+		r.logger.Zap.Error(fmt.Sprintf("%s %s with error: %v", tag, tracingStore, err))
 		return nil, err
 	}
 
@@ -35,6 +36,7 @@ func (r *repository) DeleteSessionByRefreshToken(ctx context.Context, db *mongo.
 
 	result, err := db.Collection(r.GetCollectionName()).DeleteOne(ctx, filter)
 	if err != nil {
+		r.logger.Zap.Error(fmt.Sprintf("%s %s with error: %v", tag, tracingDeleteSessionByRefreshToken, err))
 		return 0, err
 	}
 	return result.DeletedCount, nil

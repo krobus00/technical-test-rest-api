@@ -13,6 +13,9 @@ const (
 	tag = `[UserService]`
 
 	tracingRegisterUser = "RegisterUser"
+	tracingLoginUser    = "LoginUser"
+	tracingGetUserInfo  = "GetUserInfo"
+	tracingRefreshToken = "RefreshToken"
 )
 
 type (

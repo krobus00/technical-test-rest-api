@@ -12,7 +12,11 @@ import (
 const (
 	tag = `[ProductService]`
 
-	tracingRegisterUser = "RegisterUser"
+	tracingStore           = "StoreProduct"
+	tracingFindAll         = "FindAllProducts"
+	tracingFindProductByID = "FindProductByID"
+	tracingUpdate          = "UpdateProduct"
+	tracingDelete          = "DeleteProduct"
 )
 
 type (

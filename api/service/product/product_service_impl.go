@@ -3,6 +3,7 @@ package product
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -17,6 +18,7 @@ func (svc *service) Store(ctx context.Context, payload *model.CreateProductReque
 	p := bluemonday.StrictPolicy()
 	userID, err := primitive.ObjectIDFromHex(ctx.Value("userID").(string))
 	if err != nil {
+		svc.logger.Zap.Error(fmt.Sprintf("%s %s with error: %v", tag, tracingStore, err))
 		return nil, err
 	}
 	newProduct := &database.Product{
@@ -32,6 +34,7 @@ func (svc *service) Store(ctx context.Context, payload *model.CreateProductReque
 	}
 	newProduct, err = svc.repository.ProductRepository.Store(ctx, svc.db, newProduct)
 	if err != nil {
+		svc.logger.Zap.Error(fmt.Sprintf("%s %s with error: %v", tag, tracingStore, err))
 		return nil, err
 	}
 	return &model.ProductResponse{
@@ -54,6 +57,7 @@ func (svc *service) FindAll(ctx context.Context, payload *model.PaginationReques
 	payload.BuildRequest()
 	userID, err := primitive.ObjectIDFromHex(ctx.Value("userID").(string))
 	if err != nil {
+		svc.logger.Zap.Error(fmt.Sprintf("%s %s with error: %v", tag, tracingFindAll, err))
 		return nil, err
 	}
 	role := ctx.Value("role").(string)
@@ -70,6 +74,7 @@ func (svc *service) FindAll(ctx context.Context, payload *model.PaginationReques
 
 	results, err := svc.repository.ProductRepository.FindAll(ctx, svc.db, filter, payload)
 	if err != nil {
+		svc.logger.Zap.Error(fmt.Sprintf("%s %s with error: %v", tag, tracingFindAll, err))
 		return nil, err
 	}
 	if results == nil {
@@ -93,6 +98,7 @@ func (svc *service) FindAll(ctx context.Context, payload *model.PaginationReques
 	}
 	count, err := svc.repository.ProductRepository.Count(ctx, svc.db, filter, payload)
 	if err != nil {
+		svc.logger.Zap.Error(fmt.Sprintf("%s %s with error: %v", tag, tracingFindAll, err))
 		return nil, err
 	}
 
@@ -104,6 +110,7 @@ func (svc *service) FindProductByID(ctx context.Context, payload *model.GetProdu
 	p := bluemonday.StrictPolicy()
 	userID, err := primitive.ObjectIDFromHex(ctx.Value("userID").(string))
 	if err != nil {
+		svc.logger.Zap.Error(fmt.Sprintf("%s %s with error: %v", tag, tracingFindProductByID, err))
 		return nil, err
 	}
 	role := ctx.Value("role").(string)
@@ -119,6 +126,7 @@ func (svc *service) FindProductByID(ctx context.Context, payload *model.GetProdu
 	}
 	productID, err := primitive.ObjectIDFromHex(payload.ID)
 	if err != nil {
+		svc.logger.Zap.Error(fmt.Sprintf("%s %s with error: %v", tag, tracingFindProductByID, err))
 		return nil, err
 	}
 	input := &database.Product{
@@ -126,6 +134,7 @@ func (svc *service) FindProductByID(ctx context.Context, payload *model.GetProdu
 	}
 	result, err := svc.repository.ProductRepository.FindProductByID(ctx, svc.db, filter, input)
 	if err != nil {
+		svc.logger.Zap.Error(fmt.Sprintf("%s %s with error: %v", tag, tracingFindProductByID, err))
 		return nil, err
 	}
 	if result == nil {
@@ -151,6 +160,7 @@ func (svc *service) Update(ctx context.Context, payload *model.UpdateProductRequ
 	p := bluemonday.StrictPolicy()
 	userID, err := primitive.ObjectIDFromHex(ctx.Value("userID").(string))
 	if err != nil {
+		svc.logger.Zap.Error(fmt.Sprintf("%s %s with error: %v", tag, tracingUpdate, err))
 		return nil, err
 	}
 	role := ctx.Value("role").(string)
@@ -166,6 +176,7 @@ func (svc *service) Update(ctx context.Context, payload *model.UpdateProductRequ
 	}
 	productID, err := primitive.ObjectIDFromHex(payload.ID)
 	if err != nil {
+		svc.logger.Zap.Error(fmt.Sprintf("%s %s with error: %v", tag, tracingUpdate, err))
 		return nil, err
 	}
 	input := &database.Product{
@@ -173,6 +184,7 @@ func (svc *service) Update(ctx context.Context, payload *model.UpdateProductRequ
 	}
 	result, err := svc.repository.ProductRepository.FindProductByID(ctx, svc.db, filter, input)
 	if err != nil {
+		svc.logger.Zap.Error(fmt.Sprintf("%s %s with error: %v", tag, tracingUpdate, err))
 		return nil, err
 	}
 	if result == nil {
@@ -194,6 +206,7 @@ func (svc *service) Update(ctx context.Context, payload *model.UpdateProductRequ
 
 	result, err = svc.repository.ProductRepository.Update(ctx, svc.db, filter, result)
 	if err != nil {
+		svc.logger.Zap.Error(fmt.Sprintf("%s %s with error: %v", tag, tracingUpdate, err))
 		return nil, err
 	}
 
@@ -216,6 +229,7 @@ func (svc *service) Update(ctx context.Context, payload *model.UpdateProductRequ
 func (svc *service) Delete(ctx context.Context, payload *model.DeleteProductRequest) error {
 	userID, err := primitive.ObjectIDFromHex(ctx.Value("userID").(string))
 	if err != nil {
+		svc.logger.Zap.Error(fmt.Sprintf("%s %s with error: %v", tag, tracingDelete, err))
 		return err
 	}
 	role := ctx.Value("role").(string)
@@ -229,6 +243,7 @@ func (svc *service) Delete(ctx context.Context, payload *model.DeleteProductRequ
 	}
 	productID, err := primitive.ObjectIDFromHex(payload.ID)
 	if err != nil {
+		svc.logger.Zap.Error(fmt.Sprintf("%s %s with error: %v", tag, tracingDelete, err))
 		return err
 	}
 	input := &database.Product{
@@ -236,6 +251,7 @@ func (svc *service) Delete(ctx context.Context, payload *model.DeleteProductRequ
 	}
 	result, err := svc.repository.ProductRepository.FindProductByID(ctx, svc.db, filter, input)
 	if err != nil {
+		svc.logger.Zap.Error(fmt.Sprintf("%s %s with error: %v", tag, tracingDelete, err))
 		return err
 	}
 
@@ -260,6 +276,7 @@ func (svc *service) Delete(ctx context.Context, payload *model.DeleteProductRequ
 
 	err = svc.repository.ProductRepository.Delete(ctx, svc.db, filter, result)
 	if err != nil {
+		svc.logger.Zap.Error(fmt.Sprintf("%s %s with error: %v", tag, tracingDelete, err))
 		return err
 	}
 

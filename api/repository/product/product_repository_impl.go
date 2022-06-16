@@ -2,6 +2,7 @@ package product
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/krobus00/technical-test-rest-api/model"
 	"github.com/krobus00/technical-test-rest-api/model/database"
@@ -16,7 +17,7 @@ func (r *repository) Store(ctx context.Context, db *mongo.Database, input *datab
 
 	result, err := db.Collection(r.GetCollectionName()).InsertOne(ctx, input)
 	if err != nil {
-		r.logger.Zap.Error(err.Error())
+		r.logger.Zap.Error(fmt.Sprintf("%s %s with error: %v", tag, tracingStore, err))
 		return nil, err
 	}
 
@@ -52,6 +53,7 @@ func (r *repository) Count(ctx context.Context, db *mongo.Database, filter *mode
 		if err == mongo.ErrNoDocuments {
 			return 0, nil
 		}
+		r.logger.Zap.Error(fmt.Sprintf("%s %s with error: %v", tag, tracingCount, err))
 		return 0, err
 	}
 
@@ -82,12 +84,13 @@ func (r *repository) FindAll(ctx context.Context, db *mongo.Database, filter *mo
 	defer cur.Close(ctx)
 
 	if err != nil {
+		r.logger.Zap.Error(fmt.Sprintf("%s %s with error: %v", tag, tracingFindAll, err))
 		return nil, err
 	}
 	for cur.Next(ctx) {
 		var el *database.Product
 		if err := cur.Decode(&el); err != nil {
-			r.logger.Zap.Error(err.Error())
+			r.logger.Zap.Error(fmt.Sprintf("%s %s with error: %v", tag, tracingFindAll, err))
 		}
 
 		results = append(results, el)
@@ -109,6 +112,7 @@ func (r *repository) FindProductByID(ctx context.Context, db *mongo.Database, fi
 		if err == mongo.ErrNoDocuments {
 			return nil, nil
 		}
+		r.logger.Zap.Error(fmt.Sprintf("%s %s with error: %v", tag, tracingFindProductByID, err))
 		return nil, err
 	}
 
@@ -127,6 +131,7 @@ func (r *repository) Update(ctx context.Context, db *mongo.Database, filter *mod
 	_, err := db.Collection(r.GetCollectionName()).UpdateOne(ctx, filterQuery, fields)
 
 	if err != nil {
+		r.logger.Zap.Error(fmt.Sprintf("%s %s with error: %v", tag, tracingUpdate, err))
 		return nil, err
 	}
 
@@ -145,6 +150,7 @@ func (r *repository) Delete(ctx context.Context, db *mongo.Database, filter *mod
 	_, err := db.Collection(r.GetCollectionName()).UpdateOne(ctx, filterQuery, fields)
 
 	if err != nil {
+		r.logger.Zap.Error(fmt.Sprintf("%s %s with error: %v", tag, tracingDelete, err))
 		return err
 	}
 

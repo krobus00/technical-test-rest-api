@@ -11,7 +11,9 @@ import (
 const (
 	tag = `[UserRepository]`
 
-	tracingStore = "StoreUser"
+	tracingStore              = "StoreUser"
+	tracingFindUserByUsername = "FindUserByUsername"
+	tracingFindUserByID       = "FindUserByID"
 )
 
 type (

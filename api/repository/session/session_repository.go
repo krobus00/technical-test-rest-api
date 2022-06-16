@@ -11,7 +11,8 @@ import (
 const (
 	tag = `[SessionRepository]`
 
-	tracingStore = "StoreSession"
+	tracingStore                       = "StoreSession"
+	tracingDeleteSessionByRefreshToken = "DeleteSessionByRefreshToken"
 )
 
 type (
