@@ -37,6 +37,9 @@ func (r *repository) FindUserByUsername(ctx context.Context, db *mongo.Database,
 	err := db.Collection(r.GetCollectionName()).FindOne(ctx, filter).Decode(result)
 
 	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, nil
+		}
 		return nil, err
 	}
 
@@ -50,6 +53,9 @@ func (r *repository) FindUserByID(ctx context.Context, db *mongo.Database, input
 	err := db.Collection(r.GetCollectionName()).FindOne(ctx, filter).Decode(result)
 
 	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, nil
+		}
 		return nil, err
 	}
 

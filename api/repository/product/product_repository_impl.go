@@ -49,6 +49,9 @@ func (r *repository) Count(ctx context.Context, db *mongo.Database, filter *mode
 	count, err := db.Collection(r.GetCollectionName()).CountDocuments(ctx, filterQuery)
 
 	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return 0, nil
+		}
 		return 0, err
 	}
 
@@ -103,6 +106,9 @@ func (r *repository) FindProductByID(ctx context.Context, db *mongo.Database, fi
 	err := db.Collection(r.GetCollectionName()).FindOne(ctx, filterQuery).Decode(result)
 
 	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, nil
+		}
 		return nil, err
 	}
 

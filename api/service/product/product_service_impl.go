@@ -2,6 +2,8 @@ package product
 
 import (
 	"context"
+	"errors"
+	"net/http"
 	"time"
 
 	"github.com/krobus00/technical-test-rest-api/constant"
@@ -67,6 +69,14 @@ func (svc *service) FindAll(ctx context.Context, payload *model.PaginationReques
 	}
 
 	results, err := svc.repository.ProductRepository.FindAll(ctx, svc.db, filter, payload)
+	if err != nil {
+		return nil, err
+	}
+	if results == nil {
+		resp.BuildResponse(payload, products, 0)
+		return resp, nil
+	}
+
 	for _, v := range results {
 		products = append(products, &model.ProductResponse{
 			ID:          v.ID.Hex(),
@@ -82,6 +92,10 @@ func (svc *service) FindAll(ctx context.Context, payload *model.PaginationReques
 		})
 	}
 	count, err := svc.repository.ProductRepository.Count(ctx, svc.db, filter, payload)
+	if err != nil {
+		return nil, err
+	}
+
 	resp.BuildResponse(payload, products, count)
 	return resp, nil
 }
@@ -113,6 +127,9 @@ func (svc *service) FindProductByID(ctx context.Context, payload *model.GetProdu
 	result, err := svc.repository.ProductRepository.FindProductByID(ctx, svc.db, filter, input)
 	if err != nil {
 		return nil, err
+	}
+	if result == nil {
+		return nil, model.NewHttpCustomError(http.StatusNotFound, errors.New("Product not found"))
 	}
 
 	product = &model.ProductResponse{
@@ -157,6 +174,9 @@ func (svc *service) Update(ctx context.Context, payload *model.UpdateProductRequ
 	result, err := svc.repository.ProductRepository.FindProductByID(ctx, svc.db, filter, input)
 	if err != nil {
 		return nil, err
+	}
+	if result == nil {
+		return nil, model.NewHttpCustomError(http.StatusNotFound, errors.New("Product not found"))
 	}
 
 	result = &database.Product{
@@ -217,6 +237,10 @@ func (svc *service) Delete(ctx context.Context, payload *model.DeleteProductRequ
 	result, err := svc.repository.ProductRepository.FindProductByID(ctx, svc.db, filter, input)
 	if err != nil {
 		return err
+	}
+
+	if result == nil {
+		return model.NewHttpCustomError(http.StatusNotFound, errors.New("Product not found"))
 	}
 
 	tn := time.Now().Unix()

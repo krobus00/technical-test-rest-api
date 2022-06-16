@@ -4,6 +4,7 @@ go 1.18
 
 require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/go-playground/locales v0.14.0
 	github.com/labstack/echo/v4 v4.7.2
 	go.uber.org/zap v1.21.0
 	golang.org/x/crypto v0.0.0-20211215153901-e495a2d5b3d3
@@ -11,7 +12,6 @@ require (
 
 require (
 	github.com/aymerick/douceur v0.2.0 // indirect
-	github.com/go-playground/locales v0.14.0 // indirect
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/golang/snappy v0.0.1 // indirect

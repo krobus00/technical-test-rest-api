@@ -31,7 +31,15 @@ func (svc *service) RegisterUser(ctx context.Context, payload *model.RegisterUse
 		},
 	}
 
-	user, err := svc.repository.UserRepository.Store(ctx, svc.db, newUser)
+	user, err := svc.repository.UserRepository.FindUserByUsername(ctx, svc.db, newUser)
+	if err != nil {
+		return nil, err
+	}
+	if user != nil {
+		return nil, model.NewHttpCustomError(http.StatusBadRequest, errors.New("Username already taken"))
+	}
+
+	user, err = svc.repository.UserRepository.Store(ctx, svc.db, newUser)
 	if err != nil {
 		return nil, err
 	}
