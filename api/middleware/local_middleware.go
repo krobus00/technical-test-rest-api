@@ -45,7 +45,12 @@ func DecodeJWTTokenMiddleware(tokenSecret string) echo.MiddlewareFunc {
 				if !ok {
 					return model.NewHttpCustomError(http.StatusUnauthorized, errors.New("Invalid Token"))
 				}
+				role, ok := claims["role"].(string)
+				if !ok {
+					return model.NewHttpCustomError(http.StatusUnauthorized, errors.New("Invalid Token"))
+				}
 				eCtx.Set("userID", userID)
+				eCtx.Set("role", role)
 			} else {
 				return model.NewHttpCustomError(http.StatusUnauthorized, errors.New("Invalid Token"))
 			}

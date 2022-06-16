@@ -41,6 +41,7 @@ func (c *Controller) HandleUserRegister(eCtx echo.Context) error {
 
 	return eCtx.JSON(http.StatusOK, resp)
 }
+
 func (c *Controller) HandleUserLogin(eCtx echo.Context) error {
 	ctx := eCtx.Request().Context()
 

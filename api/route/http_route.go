@@ -23,6 +23,12 @@ func NewRoutes(
 	service.POST("/user/login", handler.UserController.HandleUserLogin)
 	service.GET("/user/me", handler.UserController.HandleGetUserInfo, decodeAccessTokenJWTMiddleware)
 	service.GET("/user/refresh-token", handler.UserController.HandleRefreshToken, decodeRefreshTokenMiddleware)
+
+	service.POST("/products", handler.ProductController.HandleCreateProduct, decodeAccessTokenJWTMiddleware)
+	service.GET("/products", handler.ProductController.HandleGetAllProduct, decodeAccessTokenJWTMiddleware)
+	service.GET("/products/:id", handler.ProductController.HandleGetProductDetail, decodeAccessTokenJWTMiddleware)
+	service.PATCH("/products/:id", handler.ProductController.HandleUpdateProduct, decodeAccessTokenJWTMiddleware)
+	service.DELETE("/products/:id", handler.ProductController.HandleDeleteProduct, decodeAccessTokenJWTMiddleware)
 }
 
 var Module = fx.Options(

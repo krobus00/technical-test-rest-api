@@ -10,6 +10,7 @@ import (
 	"github.com/krobus00/technical-test-rest-api/model"
 	"github.com/krobus00/technical-test-rest-api/model/database"
 	"github.com/krobus00/technical-test-rest-api/util"
+	"github.com/microcosm-cc/bluemonday"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -35,8 +36,8 @@ func (svc *service) RegisterUser(ctx context.Context, payload *model.RegisterUse
 		return nil, err
 	}
 
-	accessToken, err := util.CreateToken(user.ID.Hex(), svc.config.AccessTokenDuration, svc.config.AccessTokenSecret)
-	refreshToken, err := util.CreateToken(user.ID.Hex(), svc.config.RefreshTokenDuration, svc.config.RefreshTokenSecret)
+	accessToken, err := util.CreateToken(user.ID.Hex(), newUser.Role, svc.config.AccessTokenDuration, svc.config.AccessTokenSecret)
+	refreshToken, err := util.CreateToken(user.ID.Hex(), newUser.Role, svc.config.RefreshTokenDuration, svc.config.RefreshTokenSecret)
 
 	newSession := &database.Session{
 		Username:     user.Username,
@@ -77,8 +78,8 @@ func (svc *service) LoginUser(ctx context.Context, payload *model.LoginUserReque
 		return nil, model.NewHttpCustomError(http.StatusBadRequest, errors.New("Wrong password"))
 	}
 
-	accessToken, err := util.CreateToken(user.ID.Hex(), svc.config.AccessTokenDuration, svc.config.AccessTokenSecret)
-	refreshToken, err := util.CreateToken(user.ID.Hex(), svc.config.RefreshTokenDuration, svc.config.RefreshTokenSecret)
+	accessToken, err := util.CreateToken(user.ID.Hex(), user.Role, svc.config.AccessTokenDuration, svc.config.AccessTokenSecret)
+	refreshToken, err := util.CreateToken(user.ID.Hex(), user.Role, svc.config.RefreshTokenDuration, svc.config.RefreshTokenSecret)
 
 	newSession := &database.Session{
 		Username:     user.Username,
@@ -104,6 +105,7 @@ func (svc *service) LoginUser(ctx context.Context, payload *model.LoginUserReque
 }
 
 func (svc *service) GetUserInfo(ctx context.Context) (*model.UserResponse, error) {
+	p := bluemonday.StrictPolicy()
 	userID, err := primitive.ObjectIDFromHex(ctx.Value("userID").(string))
 	if err != nil {
 		return nil, err
@@ -118,7 +120,7 @@ func (svc *service) GetUserInfo(ctx context.Context) (*model.UserResponse, error
 
 	return &model.UserResponse{
 		ID:       user.ID.Hex(),
-		Username: user.Username,
+		Username: p.Sanitize(user.Username),
 		Role:     user.Role,
 		DateColumn: model.DateColumn{
 			CreatedAt: user.DateColumn.CreatedAt,
@@ -152,8 +154,8 @@ func (svc *service) RefreshToken(ctx context.Context) (*model.TokenResponse, err
 		return nil, model.NewHttpCustomError(http.StatusUnprocessableEntity, errors.New("Invalid refresh token"))
 	}
 
-	accessToken, err := util.CreateToken(user.ID.Hex(), svc.config.AccessTokenDuration, svc.config.AccessTokenSecret)
-	refreshToken, err := util.CreateToken(user.ID.Hex(), svc.config.RefreshTokenDuration, svc.config.RefreshTokenSecret)
+	accessToken, err := util.CreateToken(user.ID.Hex(), user.Role, svc.config.AccessTokenDuration, svc.config.AccessTokenSecret)
+	refreshToken, err := util.CreateToken(user.ID.Hex(), user.Role, svc.config.RefreshTokenDuration, svc.config.RefreshTokenSecret)
 
 	newSession := &database.Session{
 		Username:     user.Username,

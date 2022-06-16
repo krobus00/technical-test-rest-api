@@ -15,6 +15,7 @@ func (r *repository) Store(ctx context.Context, db *mongo.Database, input *datab
 	result, err := db.Collection(r.GetCollectionName()).InsertOne(ctx, input)
 	if err != nil {
 		r.logger.Zap.Error(err.Error())
+		return nil, err
 	}
 
 	if oid, ok := result.InsertedID.(primitive.ObjectID); ok {
@@ -41,6 +42,7 @@ func (r *repository) FindUserByUsername(ctx context.Context, db *mongo.Database,
 
 	return result, nil
 }
+
 func (r *repository) FindUserByID(ctx context.Context, db *mongo.Database, input *database.User) (*database.User, error) {
 	filter := bson.M{"_id": input.ID}
 

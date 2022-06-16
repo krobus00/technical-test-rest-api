@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"github.com/krobus00/technical-test-rest-api/api/controller/product"
 	"github.com/krobus00/technical-test-rest-api/api/controller/user"
 	"go.uber.org/fx"
 )
@@ -8,7 +9,8 @@ import (
 type Handler struct {
 	fx.In
 
-	UserController user.Controller
+	UserController    user.Controller
+	ProductController product.Controller
 }
 
 func NewHandler() *Handler {
