@@ -4,9 +4,11 @@ import (
 	"context"
 	"net/http"
 
+	ut "github.com/go-playground/universal-translator"
 	"github.com/krobus00/technical-test-rest-api/api/service/product"
 	"github.com/krobus00/technical-test-rest-api/infrastructure"
 	"github.com/krobus00/technical-test-rest-api/model"
+	"github.com/krobus00/technical-test-rest-api/util"
 	"github.com/labstack/echo/v4"
 	"go.uber.org/fx"
 )
@@ -20,6 +22,7 @@ type Controller struct {
 
 	Logger         infrastructure.Logger
 	ProductService product.ProductService
+	Translator     *ut.UniversalTranslator
 }
 
 func (c *Controller) HandleCreateProduct(eCtx echo.Context) error {
@@ -30,10 +33,11 @@ func (c *Controller) HandleCreateProduct(eCtx echo.Context) error {
 		return err
 	}
 
-	// if err := eCtx.Validate(payload); err != nil {
-	// 	trans := kro_util.TranslatorFromRequestHeader(eCtx, c.Translator)
-	// 	return echo.NewHTTPError(http.StatusBadRequest, kro_util.BuildValidationErrors(err, trans))
-	// }
+	if err := eCtx.Validate(payload); err != nil {
+		trans := util.TranslatorFromRequestHeader(eCtx, c.Translator)
+		return echo.NewHTTPError(http.StatusBadRequest, util.BuildValidationErrors(err, trans))
+	}
+
 	ctx = context.WithValue(ctx, "userID", eCtx.Get("userID").(string))
 	resp, err := c.ProductService.Store(ctx, payload)
 	if err != nil {
@@ -55,10 +59,11 @@ func (c *Controller) HandleGetProductDetail(eCtx echo.Context) error {
 		return err
 	}
 
-	// if err := eCtx.Validate(payload); err != nil {
-	// 	trans := kro_util.TranslatorFromRequestHeader(eCtx, c.Translator)
-	// 	return echo.NewHTTPError(http.StatusBadRequest, kro_util.BuildValidationErrors(err, trans))
-	// }
+	if err := eCtx.Validate(payload); err != nil {
+		trans := util.TranslatorFromRequestHeader(eCtx, c.Translator)
+		return echo.NewHTTPError(http.StatusBadRequest, util.BuildValidationErrors(err, trans))
+	}
+
 	ctx = context.WithValue(ctx, "userID", eCtx.Get("userID").(string))
 	ctx = context.WithValue(ctx, "role", eCtx.Get("role").(string))
 	resp, err := c.ProductService.FindProductByID(ctx, payload)
@@ -80,10 +85,11 @@ func (c *Controller) HandleGetAllProduct(eCtx echo.Context) error {
 		return err
 	}
 
-	// if err := eCtx.Validate(payload); err != nil {
-	// 	trans := kro_util.TranslatorFromRequestHeader(eCtx, c.Translator)
-	// 	return echo.NewHTTPError(http.StatusBadRequest, kro_util.BuildValidationErrors(err, trans))
-	// }
+	if err := eCtx.Validate(payload); err != nil {
+		trans := util.TranslatorFromRequestHeader(eCtx, c.Translator)
+		return echo.NewHTTPError(http.StatusBadRequest, util.BuildValidationErrors(err, trans))
+	}
+
 	ctx = context.WithValue(ctx, "userID", eCtx.Get("userID").(string))
 	ctx = context.WithValue(ctx, "role", eCtx.Get("role").(string))
 	resp, err := c.ProductService.FindAll(ctx, payload)
@@ -106,10 +112,11 @@ func (c *Controller) HandleUpdateProduct(eCtx echo.Context) error {
 		return err
 	}
 
-	// if err := eCtx.Validate(payload); err != nil {
-	// 	trans := kro_util.TranslatorFromRequestHeader(eCtx, c.Translator)
-	// 	return echo.NewHTTPError(http.StatusBadRequest, kro_util.BuildValidationErrors(err, trans))
-	// }
+	if err := eCtx.Validate(payload); err != nil {
+		trans := util.TranslatorFromRequestHeader(eCtx, c.Translator)
+		return echo.NewHTTPError(http.StatusBadRequest, util.BuildValidationErrors(err, trans))
+	}
+
 	ctx = context.WithValue(ctx, "userID", eCtx.Get("userID").(string))
 	ctx = context.WithValue(ctx, "role", eCtx.Get("role").(string))
 	resp, err := c.ProductService.Update(ctx, payload)
@@ -132,10 +139,11 @@ func (c *Controller) HandleDeleteProduct(eCtx echo.Context) error {
 		return err
 	}
 
-	// if err := eCtx.Validate(payload); err != nil {
-	// 	trans := kro_util.TranslatorFromRequestHeader(eCtx, c.Translator)
-	// 	return echo.NewHTTPError(http.StatusBadRequest, kro_util.BuildValidationErrors(err, trans))
-	// }
+	if err := eCtx.Validate(payload); err != nil {
+		trans := util.TranslatorFromRequestHeader(eCtx, c.Translator)
+		return echo.NewHTTPError(http.StatusBadRequest, util.BuildValidationErrors(err, trans))
+	}
+
 	ctx = context.WithValue(ctx, "userID", eCtx.Get("userID").(string))
 	ctx = context.WithValue(ctx, "role", eCtx.Get("role").(string))
 	err := c.ProductService.Delete(ctx, payload)

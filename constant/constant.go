@@ -10,3 +10,7 @@ const (
 	DEFAULT_PAGE_LIMIT = 10
 	MAX_PAGE_LIMIT     = 50
 )
+
+const (
+	DEFAULT_LANG = "en"
+)

@@ -8,9 +8,19 @@ import (
 
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
+	"github.com/krobus00/technical-test-rest-api/constant"
 	"github.com/krobus00/technical-test-rest-api/model"
 	"github.com/labstack/echo/v4"
 )
+
+func TranslatorFromRequestHeader(ctx echo.Context, trans *ut.UniversalTranslator) ut.Translator {
+	lang := strings.ToUpper(ctx.Request().Header.Get("Accept-Language"))
+	translator, found := trans.GetTranslator(lang)
+	if !found {
+		translator, _ = trans.GetTranslator(constant.DEFAULT_LANG)
+	}
+	return translator
+}
 
 func RegisterTagNameWithLabel(validate *validator.Validate) {
 	validate.RegisterTagNameFunc(func(field reflect.StructField) string {

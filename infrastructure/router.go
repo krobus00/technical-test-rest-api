@@ -8,12 +8,13 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 )
 
-func NewRouter() *echo.Echo {
+func NewRouter(customValidator echo.Validator) *echo.Echo {
 	e := echo.New()
 	e.HideBanner = true
 	e.HidePort = true
 
 	e.HTTPErrorHandler = util.CustomHTTPErrorHandler
+	e.Validator = customValidator
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"*"},

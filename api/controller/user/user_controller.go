@@ -4,9 +4,11 @@ import (
 	"context"
 	"net/http"
 
+	ut "github.com/go-playground/universal-translator"
 	"github.com/krobus00/technical-test-rest-api/api/service/user"
 	"github.com/krobus00/technical-test-rest-api/infrastructure"
 	"github.com/krobus00/technical-test-rest-api/model"
+	"github.com/krobus00/technical-test-rest-api/util"
 	"github.com/labstack/echo/v4"
 	"go.uber.org/fx"
 )
@@ -20,6 +22,7 @@ type Controller struct {
 
 	Logger      infrastructure.Logger
 	UserService user.UserService
+	Translator  *ut.UniversalTranslator
 }
 
 func (c *Controller) HandleUserRegister(eCtx echo.Context) error {
@@ -30,10 +33,11 @@ func (c *Controller) HandleUserRegister(eCtx echo.Context) error {
 		return err
 	}
 
-	// if err := eCtx.Validate(payload); err != nil {
-	// 	trans := kro_util.TranslatorFromRequestHeader(eCtx, c.Translator)
-	// 	return echo.NewHTTPError(http.StatusBadRequest, kro_util.BuildValidationErrors(err, trans))
-	// }
+	if err := eCtx.Validate(payload); err != nil {
+		trans := util.TranslatorFromRequestHeader(eCtx, c.Translator)
+		return echo.NewHTTPError(http.StatusBadRequest, util.BuildValidationErrors(err, trans))
+	}
+
 	resp, err := c.UserService.RegisterUser(ctx, payload)
 	if err != nil {
 		return err
@@ -50,10 +54,11 @@ func (c *Controller) HandleUserLogin(eCtx echo.Context) error {
 		return err
 	}
 
-	// if err := eCtx.Validate(payload); err != nil {
-	// 	trans := kro_util.TranslatorFromRequestHeader(eCtx, c.Translator)
-	// 	return echo.NewHTTPError(http.StatusBadRequest, kro_util.BuildValidationErrors(err, trans))
-	// }
+	if err := eCtx.Validate(payload); err != nil {
+		trans := util.TranslatorFromRequestHeader(eCtx, c.Translator)
+		return echo.NewHTTPError(http.StatusBadRequest, util.BuildValidationErrors(err, trans))
+	}
+
 	resp, err := c.UserService.LoginUser(ctx, payload)
 	if err != nil {
 		return err
@@ -65,10 +70,6 @@ func (c *Controller) HandleUserLogin(eCtx echo.Context) error {
 func (c *Controller) HandleGetUserInfo(eCtx echo.Context) error {
 	ctx := eCtx.Request().Context()
 
-	// if err := eCtx.Validate(payload); err != nil {
-	// 	trans := kro_util.TranslatorFromRequestHeader(eCtx, c.Translator)
-	// 	return echo.NewHTTPError(http.StatusBadRequest, kro_util.BuildValidationErrors(err, trans))
-	// }
 	ctx = context.WithValue(ctx, "userID", eCtx.Get("userID").(string))
 	resp, err := c.UserService.GetUserInfo(ctx)
 	if err != nil {

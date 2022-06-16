@@ -1,6 +1,7 @@
 package infrastructure
 
 import (
+	ut "github.com/go-playground/universal-translator"
 	"github.com/labstack/echo/v4"
 	"go.uber.org/fx"
 )
@@ -8,10 +9,11 @@ import (
 type Infrastructure struct {
 	fx.In
 
-	Logger   Logger
-	Router   *echo.Echo
-	Env      Env
-	Database Database
+	Logger     Logger
+	Translator *ut.UniversalTranslator
+	Router     *echo.Echo
+	Env        Env
+	Database   Database
 }
 
 func NewInfrastructure() *Infrastructure {
@@ -21,8 +23,10 @@ func NewInfrastructure() *Infrastructure {
 var Module = fx.Options(
 	fx.Provide(NewEnv),
 	fx.Provide(NewLogger),
+	fx.Provide(NewTranslator),
 	fx.Provide(NewRouter),
 	fx.Provide(NewDatabase),
+	fx.Provide(NewValidator),
 
 	fx.Populate(NewInfrastructure()),
 )
