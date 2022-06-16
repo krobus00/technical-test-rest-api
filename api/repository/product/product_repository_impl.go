@@ -42,8 +42,8 @@ func (r *repository) Count(ctx context.Context, db *mongo.Database, filter *mode
 	}
 
 	if len(paginationFilter.Search) > 0 {
-		filterQuery["name"] = bson.M{"$regex": paginationFilter.Search, "$options": "im"}
-		filterQuery["description"] = bson.M{"$regex": paginationFilter.Search, "$options": "im"}
+		filterQuery["name"] = bson.M{"$regex": paginationFilter.Search, "$options": "i"}
+		filterQuery["description"] = bson.M{"$regex": paginationFilter.Search, "$options": "i"}
 	}
 
 	count, err := db.Collection(r.GetCollectionName()).CountDocuments(ctx, filterQuery)
@@ -69,8 +69,8 @@ func (r *repository) FindAll(ctx context.Context, db *mongo.Database, filter *mo
 	options := new(options.FindOptions)
 
 	if len(paginationFilter.Search) > 0 {
-		filterQuery["name"] = bson.M{"$regex": paginationFilter.Search, "$options": "im"}
-		filterQuery["description"] = bson.M{"$regex": paginationFilter.Search, "$options": "im"}
+		filterQuery["name"] = bson.M{"$regex": paginationFilter.Search, "$options": "i"}
+		filterQuery["description"] = bson.M{"$regex": paginationFilter.Search, "$options": "i"}
 	}
 
 	if paginationFilter.Limit != 0 {
