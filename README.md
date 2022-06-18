@@ -8,7 +8,7 @@
 - Jwt-go
 - Bluemonday
 - Universal Translator
-- Uber Fx (Depedency Injector)
+- Uber Fx (Dependency Injector)
 - Uber Zap (Logger)
 - MongoDB
 - Minikube (kubernetes)
